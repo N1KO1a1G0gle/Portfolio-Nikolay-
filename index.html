@@ -36,6 +36,22 @@
 
   <div class="ph full-bleed hero-photo" data-slot="hero-photo">full-bleed hero photograph</div>
 
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-inner">
+        <span>Design</span><span class="m-dot">●</span>
+        <em>Photography</em><span class="m-dot">●</span>
+        <span>Writing</span><span class="m-dot">●</span>
+        <em>Sofia, Bulgaria</em><span class="m-dot">●</span>
+        <span>Design</span><span class="m-dot">●</span>
+        <em>Photography</em><span class="m-dot">●</span>
+        <span>Writing</span><span class="m-dot">●</span>
+        <em>Sofia, Bulgaria</em><span class="m-dot">●</span>
+      </div>
+    </div>
+  </div>
+
   <!-- WHAT I DO -->
   <section class="what-i-do container">
     <div class="what-grid">
@@ -101,12 +117,18 @@
         <a href="gallery.html" class="label">View all →</a>
       </div>
       <p class="gallery-sub">Film, walks, and the occasional print — no theme required.</p>
-      <div class="photo-grid">
-        <div class="ph tall" style="height:340px" data-slot="teaser-01">photo 01</div>
-        <div class="ph" style="height:160px" data-slot="teaser-02">photo 02</div>
-        <div class="ph" style="height:160px" data-slot="teaser-03">photo 03</div>
-        <div class="ph" style="height:160px" data-slot="teaser-04">photo 04</div>
-        <div class="ph" style="height:160px" data-slot="teaser-05">photo 05</div>
+      <div class="slider" data-slider>
+        <div class="slider-track">
+          <div class="ph slider-item" data-slot="teaser-01">photo 01</div>
+          <div class="ph slider-item" data-slot="teaser-02">photo 02</div>
+          <div class="ph slider-item" data-slot="teaser-03">photo 03</div>
+          <div class="ph slider-item" data-slot="teaser-04">photo 04</div>
+          <div class="ph slider-item" data-slot="teaser-05">photo 05</div>
+        </div>
+        <div class="slider-nav">
+          <button class="slider-btn" data-dir="-1" aria-label="Previous photos">←</button>
+          <button class="slider-btn" data-dir="1" aria-label="Next photos">→</button>
+        </div>
       </div>
     </div>
   </section>
@@ -176,5 +198,6 @@
 
 </main>
 
+<script src="js/site.js" defer></script>
 </body>
 </html>
