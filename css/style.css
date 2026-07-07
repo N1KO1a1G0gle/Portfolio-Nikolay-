@@ -217,6 +217,71 @@ section { scroll-margin-top: 80px; }
 
 .section-head h2 { font: 400 34px var(--serif-display); }
 
+/* Home: what I do ------------------------------------------------------------ */
+
+.what-i-do { padding-top: 100px; }
+
+.what-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 44px;
+}
+
+.what-item {
+  border-top: 1px solid var(--hairline-strong);
+  padding-top: 26px;
+}
+
+.what-item .what-num {
+  font: 500 13px var(--sans);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.what-item h3 {
+  font: 400 22px var(--serif-display);
+  margin: 14px 0 10px;
+}
+
+.what-item p {
+  font: 400 17px/1.6 var(--serif-body);
+  color: var(--ink-66);
+}
+
+/* Home: pull quote ------------------------------------------------------------- */
+
+.pull-quote {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) 130px;
+  text-align: center;
+}
+
+.pull-quote blockquote {
+  margin: 0;
+  font: italic 400 30px/1.5 var(--serif-body);
+  color: var(--ink-80);
+}
+
+.pull-quote cite {
+  display: block;
+  margin-top: 20px;
+  font: 500 12.5px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--ink-44);
+}
+
+.pull-quote cite a {
+  color: var(--ink-44);
+  border-bottom: 1px solid var(--hairline-strong);
+  padding-bottom: 2px;
+}
+
+.pull-quote cite a:hover { color: var(--accent-hover); }
+
 /* Home: work ---------------------------------------------------------------- */
 
 #work { padding-top: 120px; }
@@ -553,6 +618,13 @@ section { scroll-margin-top: 80px; }
 
 .next-cta--post a { font-size: 32px; }
 
+.next-cta a.contact-email {
+  font: italic 400 24px var(--serif-body);
+  color: var(--accent);
+}
+
+.next-cta a.contact-email:hover { color: var(--accent-hover); }
+
 /* Gallery page ------------------------------------------------------------------------------------ */
 
 .gallery-header { max-width: var(--page-max); }
@@ -601,6 +673,10 @@ section { scroll-margin-top: 80px; }
   .contact-inner h2 { font-size: 38px; }
   .next-cta a { font-size: 28px; }
   .meta-row { gap: 32px; }
+
+  .what-i-do { padding-top: 70px; }
+  .what-grid { grid-template-columns: 1fr; gap: 28px; }
+  .pull-quote blockquote { font-size: 24px; }
 }
 
 @media (max-width: 640px) {
