@@ -25,18 +25,34 @@
   <!-- CONNECT SCREEN -->
   <section id="connect-screen" class="admin-panel">
     <h1>Connect to your site</h1>
-    <p class="admin-sub">This editor saves changes straight to your GitHub repo. You'll need a personal access token scoped to <strong>only this repository</strong> — it never leaves your browser.</p>
+    <p class="admin-sub">Two ways to edit — pick whichever fits where you are.</p>
 
-    <ol class="admin-steps">
-      <li>Go to <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
-      <li>Under <strong>Repository access</strong>, choose <strong>Only select repositories</strong> → <code>Portfolio-Nikolay-</code></li>
-      <li>Under <strong>Permissions → Repository permissions</strong>, set <strong>Contents</strong> to <strong>Read and write</strong></li>
-      <li>Generate the token and paste it below</li>
-    </ol>
+    <div class="admin-mode-grid">
 
-    <label class="admin-label" for="token-input">Personal access token</label>
-    <input id="token-input" class="admin-input" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
-    <button id="connect-btn" class="admin-btn admin-btn--primary">Connect</button>
+      <div class="admin-mode-card">
+        <h2>On this computer <span class="admin-mode-tag">works offline</span></h2>
+        <p>Edits save straight into the website folder on your disk — ideal alongside VS Code. Publish later with a git push (or ask Claude to push).</p>
+        <button id="local-btn" class="admin-btn admin-btn--primary">Open the website folder…</button>
+        <button id="local-resume-btn" class="admin-btn admin-btn--ghost" hidden>Resume last folder</button>
+        <p class="admin-hint" id="local-unsupported" hidden>Folder editing needs Chrome or Edge, opened via a localhost address (e.g. VS Code Live Server) — not a file:// page.</p>
+      </div>
+
+      <div class="admin-mode-card">
+        <h2>The live site <span class="admin-mode-tag">from anywhere</span></h2>
+        <p>Changes commit to GitHub and go live in about a minute. Needs a personal access token scoped to <strong>only this repository</strong> — it never leaves your browser.</p>
+        <ol class="admin-steps">
+          <li>Go to <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
+          <li>Under <strong>Repository access</strong>, choose <strong>Only select repositories</strong> → <code>Portfolio-Nikolay-</code></li>
+          <li>Under <strong>Permissions → Repository permissions</strong>, set <strong>Contents</strong> to <strong>Read and write</strong></li>
+          <li>Generate the token and paste it below</li>
+        </ol>
+        <label class="admin-label" for="token-input">Personal access token</label>
+        <input id="token-input" class="admin-input" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+        <button id="connect-btn" class="admin-btn admin-btn--primary">Connect</button>
+      </div>
+
+    </div>
+
     <p id="connect-error" class="admin-error" hidden></p>
   </section>
 
@@ -47,6 +63,7 @@
         <label class="admin-label" for="page-select">Page</label>
         <select id="page-select" class="admin-select"></select>
       </div>
+      <span id="mode-badge" class="admin-mode-badge"></span>
       <button id="logout-btn" class="admin-btn admin-btn--ghost">Disconnect</button>
     </div>
 

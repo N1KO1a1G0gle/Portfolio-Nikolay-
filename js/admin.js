@@ -1,6 +1,10 @@
-/* Site editor — commits photo/text changes straight to the GitHub repo
-   via the Contents API. Token lives in localStorage only; nothing here
-   ever sends it anywhere but api.github.com. */
+/* Site editor — two backends:
+   - "local": writes straight to the website folder on disk via the File
+     System Access API (Chrome/Edge, must be opened via localhost). Ideal
+     while working in VS Code; publish later with git push.
+   - "github": commits via the GitHub Contents API using a repo-scoped
+     personal access token. Token lives in localStorage only; nothing here
+     ever sends it anywhere but api.github.com. */
 
 const OWNER = 'N1KO1a1G0gle';
 const REPO = 'Portfolio-Nikolay-';
@@ -51,7 +55,7 @@ const TEXT_SELECTORS = [
 ].join(', ');
 
 // ---------------------------------------------------------------------------
-// GitHub API helpers
+// Backend: GitHub
 // ---------------------------------------------------------------------------
 
 function getToken() { return localStorage.getItem(TOKEN_KEY); }
@@ -82,21 +86,40 @@ function b64DecodeUnicode(b64) {
   );
 }
 
-async function checkRepoAccess() {
+function ghErrorHint(status, apiMessage) {
+  let hint = '';
+  if (status === 403 || status === 404) {
+    hint = ' — your token probably lacks "Contents: Read and write" permission on the repo. Create a new fine-grained token with that permission and reconnect.';
+  } else if (status === 409 || status === 422) {
+    hint = ' — the file changed since it was loaded (maybe edited elsewhere). Reload this page in the editor and try again.';
+  }
+  return `${apiMessage || 'GitHub API error'} (HTTP ${status})${hint}`;
+}
+
+async function ghCheckAccess() {
   const res = await gh(`/repos/${OWNER}/${REPO}`);
   return res.ok;
 }
 
-async function getFile(path) {
+// Returns only the blob sha — never decodes content, so it's safe for
+// binary files like images (decoding those as UTF-8 text throws).
+async function ghGetSha(path) {
   const res = await gh(`/repos/${OWNER}/${REPO}/contents/${encPath(path)}?ref=${BRANCH}`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Couldn't load ${path} (${res.status})`);
+  if (!res.ok) throw new Error(ghErrorHint(res.status, `Couldn't check ${path}`));
+  const json = await res.json();
+  return json.sha;
+}
+
+async function ghGetTextFile(path) {
+  const res = await gh(`/repos/${OWNER}/${REPO}/contents/${encPath(path)}?ref=${BRANCH}`);
+  if (!res.ok) throw new Error(ghErrorHint(res.status, `Couldn't load ${path}`));
   const json = await res.json();
   return { sha: json.sha, text: b64DecodeUnicode(json.content) };
 }
 
-async function putTextFile(path, text, sha, message) {
-  const body = { message, content: b64EncodeUnicode(text), branch: BRANCH };
+async function ghPutFile(path, base64Content, sha, message) {
+  const body = { message, content: base64Content, branch: BRANCH };
   if (sha) body.sha = sha;
   const res = await gh(`/repos/${OWNER}/${REPO}/contents/${encPath(path)}`, {
     method: 'PUT',
@@ -105,33 +128,109 @@ async function putTextFile(path, text, sha, message) {
   });
   if (!res.ok) {
     const j = await res.json().catch(() => ({}));
-    throw new Error(j.message || `Couldn't save ${path} (${res.status})`);
+    throw new Error(ghErrorHint(res.status, j.message || `Couldn't save ${path}`));
   }
   return res.json();
 }
 
-async function putBinaryFile(path, base64Content, message) {
-  const existing = await getFile(path).catch(() => null);
-  const body = { message, content: base64Content, branch: BRANCH };
-  if (existing) body.sha = existing.sha;
-  const res = await gh(`/repos/${OWNER}/${REPO}/contents/${encPath(path)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+// ---------------------------------------------------------------------------
+// Backend: local folder (File System Access API)
+// ---------------------------------------------------------------------------
+
+const localFsSupported = typeof window.showDirectoryPicker === 'function' && window.isSecureContext;
+
+async function localReadPage(dir, file) {
+  const fh = await dir.getFileHandle(file);
+  return { text: await (await fh.getFile()).text() };
+}
+
+async function localWriteFile(dir, path, data) {
+  const parts = path.split('/');
+  let folder = dir;
+  for (let i = 0; i < parts.length - 1; i++) {
+    folder = await folder.getDirectoryHandle(parts[i], { create: true });
+  }
+  const fh = await folder.getFileHandle(parts[parts.length - 1], { create: true });
+  const w = await fh.createWritable();
+  await w.write(data);
+  await w.close();
+}
+
+// Remember the folder across visits (IndexedDB can store directory handles).
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('admin-editor', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('kv');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
-  if (!res.ok) {
-    const j = await res.json().catch(() => ({}));
-    throw new Error(j.message || `Couldn't upload ${path} (${res.status})`);
-  }
-  return res.json();
+}
+
+async function idbSet(key, value) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').put(value, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function idbGet(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readonly');
+    const req = tx.objectStore('kv').get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
 // ---------------------------------------------------------------------------
-// Image resize/compress (keeps uploads under the API's 1MB limit and the
-// site fast) — draws to a canvas capped at 1600px on the long edge.
+// Unified backend interface
 // ---------------------------------------------------------------------------
 
-function resizeImageToBase64(file, maxDim = 1600, quality = 0.82) {
+let backend = null; // { mode: 'github' } | { mode: 'local', dir }
+
+async function backendReadPage(file) {
+  if (backend.mode === 'local') return localReadPage(backend.dir, file);
+  return ghGetTextFile(file);
+}
+
+async function backendSavePage(file, html, sha) {
+  if (backend.mode === 'local') {
+    await localWriteFile(backend.dir, file, html);
+    return { newSha: null };
+  }
+  const result = await ghPutFile(file, b64EncodeUnicode(html), sha, `Admin: edit ${file}`);
+  return { newSha: result.content.sha };
+}
+
+async function backendSaveImage(path, { blob, base64 }) {
+  if (backend.mode === 'local') {
+    await localWriteFile(backend.dir, path, blob);
+    return;
+  }
+  const existingSha = await ghGetSha(path);
+  await ghPutFile(path, base64, existingSha, `Admin: update photo ${path}`);
+}
+
+// ---------------------------------------------------------------------------
+// Image resize/compress (keeps uploads small and the site fast) — draws to a
+// canvas capped at 1600px on the long edge, exports JPEG.
+// ---------------------------------------------------------------------------
+
+function resizeImage(file, maxDim = 1600, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -149,7 +248,7 @@ function resizeImageToBase64(file, maxDim = 1600, quality = 0.82) {
       canvas.toBlob(blob => {
         if (!blob) { reject(new Error('Image compression failed')); return; }
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onload = () => resolve({ blob, base64: reader.result.split(',')[1] });
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       }, 'image/jpeg', quality);
@@ -160,7 +259,7 @@ function resizeImageToBase64(file, maxDim = 1600, quality = 0.82) {
 }
 
 // ---------------------------------------------------------------------------
-// State
+// State + UI helpers
 // ---------------------------------------------------------------------------
 
 const state = {
@@ -212,7 +311,7 @@ async function renderPage(file) {
 
   let loaded;
   try {
-    loaded = await getFile(file);
+    loaded = await backendReadPage(file);
   } catch (err) {
     container.innerHTML = '';
     showStatus(err.message, true);
@@ -220,7 +319,7 @@ async function renderPage(file) {
   }
 
   const doc = new DOMParser().parseFromString(loaded.text, 'text/html');
-  state.current = { file, sha: loaded.sha, doc, photoFields: [], textFields: [] };
+  state.current = { file, sha: loaded.sha || null, doc, photoFields: [], textFields: [] };
 
   container.innerHTML = '';
 
@@ -244,7 +343,7 @@ async function renderPage(file) {
       thumb.className = 'admin-photo-thumb';
       if (existingImg) {
         const img = document.createElement('img');
-        img.src = new URL(existingImg.getAttribute('src'), location.href.replace(/admin\.html.*/, '')).href;
+        img.src = existingImg.getAttribute('src');
         thumb.appendChild(img);
       } else {
         thumb.textContent = '—';
@@ -342,12 +441,12 @@ async function saveCurrentPage() {
   showStatus('Saving…');
 
   try {
-    // Upload changed photos first, then patch the retained document.
+    // Save changed photos first, then patch the retained document.
     for (const field of state.current.photoFields) {
       if (!field.pendingFile) continue;
-      const base64 = await resizeImageToBase64(field.pendingFile);
+      const resized = await resizeImage(field.pendingFile);
       const path = `images/${field.slot}.jpg`;
-      await putBinaryFile(path, base64, `Admin: update photo ${field.slot}`);
+      await backendSaveImage(path, resized);
 
       field.el.classList.add('has-photo');
       field.el.innerHTML = '';
@@ -369,14 +468,17 @@ async function saveCurrentPage() {
     }
 
     const html = '<!DOCTYPE html>\n' + state.current.doc.documentElement.outerHTML;
-    const result = await putTextFile(state.current.file, html, state.current.sha, `Admin: edit ${state.current.file}`);
-    state.current.sha = result.content.sha;
+    const { newSha } = await backendSavePage(state.current.file, html, state.current.sha);
+    if (newSha) state.current.sha = newSha;
 
-    showStatus('Saved — live in about 30–60 seconds.');
     updateSaveBar();
     // Re-render so thumbnails/hints reflect the freshly saved state.
     await renderPage(state.current.file);
     document.getElementById('page-select').value = state.current.file;
+
+    showStatus(backend.mode === 'local'
+      ? 'Saved to your folder — refresh your local preview to see it. Publish later with a git push.'
+      : 'Saved — live in about 30–60 seconds.');
   } catch (err) {
     showStatus(err.message, true);
   } finally {
@@ -391,6 +493,8 @@ async function saveCurrentPage() {
 function showEditor() {
   document.getElementById('connect-screen').hidden = true;
   document.getElementById('editor-screen').hidden = false;
+  document.getElementById('mode-badge').textContent =
+    backend.mode === 'local' ? 'Editing: local folder' : 'Editing: live site';
   const select = document.getElementById('page-select');
   select.innerHTML = PAGES.map(p => `<option value="${p.file}">${p.label}</option>`).join('');
   renderPage(PAGES[0].file);
@@ -408,10 +512,11 @@ function showConnect(message) {
   }
 }
 
-async function tryConnect(token) {
+async function connectGithub(token) {
   setToken(token);
-  const ok = await checkRepoAccess();
+  const ok = await ghCheckAccess();
   if (ok) {
+    backend = { mode: 'github' };
     showEditor();
   } else {
     clearToken();
@@ -419,10 +524,49 @@ async function tryConnect(token) {
   }
 }
 
+async function verifyLocalDir(dir) {
+  try {
+    await dir.getFileHandle('index.html');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function connectLocal(dir) {
+  if (!(await verifyLocalDir(dir))) {
+    showConnect(`"${dir.name}" doesn't look like the website folder — it has no index.html. Pick the folder that directly contains index.html, gallery.html, etc.`);
+    return;
+  }
+  backend = { mode: 'local', dir };
+  await idbSet('localDir', dir).catch(() => {});
+  showEditor();
+}
+
 document.getElementById('connect-btn').addEventListener('click', () => {
   const token = document.getElementById('token-input').value.trim();
   if (!token) return;
-  tryConnect(token);
+  connectGithub(token);
+});
+
+document.getElementById('local-btn').addEventListener('click', async () => {
+  try {
+    const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await connectLocal(dir);
+  } catch (err) {
+    if (err && err.name !== 'AbortError') showConnect(err.message);
+  }
+});
+
+document.getElementById('local-resume-btn').addEventListener('click', async () => {
+  const dir = await idbGet('localDir').catch(() => null);
+  if (!dir) { showConnect('No remembered folder — use "Open the website folder…" instead.'); return; }
+  const perm = await dir.requestPermission({ mode: 'readwrite' });
+  if (perm === 'granted') {
+    await connectLocal(dir);
+  } else {
+    showConnect('Folder access was not granted — pick the folder again.');
+  }
 });
 
 document.getElementById('page-select').addEventListener('change', e => {
@@ -431,19 +575,35 @@ document.getElementById('page-select').addEventListener('change', e => {
 
 document.getElementById('save-btn').addEventListener('click', saveCurrentPage);
 
-document.getElementById('logout-btn').addEventListener('click', () => {
+document.getElementById('logout-btn').addEventListener('click', async () => {
   if (isDirty() && !confirm('You have unsaved changes. Disconnect anyway?')) return;
-  clearToken();
+  if (backend && backend.mode === 'github') clearToken();
+  if (backend && backend.mode === 'local') await idbDelete('localDir').catch(() => {});
+  backend = null;
   state.current = null;
   showConnect();
 });
 
 (async function boot() {
+  // Local-folder option availability
+  if (!localFsSupported) {
+    document.getElementById('local-btn').disabled = true;
+    document.getElementById('local-unsupported').hidden = false;
+  } else {
+    const remembered = await idbGet('localDir').catch(() => null);
+    if (remembered) document.getElementById('local-resume-btn').hidden = false;
+  }
+
+  // Auto-resume a GitHub session if a token is stored
   const existing = getToken();
   if (existing) {
-    const ok = await checkRepoAccess().catch(() => false);
-    if (ok) { showEditor(); return; }
+    const ok = await ghCheckAccess().catch(() => false);
+    if (ok) {
+      backend = { mode: 'github' };
+      showEditor();
+      return;
+    }
     clearToken();
-    showConnect('Your saved session expired — reconnect with a token.');
+    showConnect('Your saved GitHub session expired — reconnect with a token.');
   }
 })();

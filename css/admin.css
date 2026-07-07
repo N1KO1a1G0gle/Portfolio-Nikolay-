@@ -114,6 +114,71 @@
 
 .admin-status.is-error { background: #f3d9d4; color: #7a2418; }
 
+.admin-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 720px) {
+  .admin-mode-grid { grid-template-columns: 1fr; }
+}
+
+.admin-mode-card {
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  padding: 26px 24px;
+  background: #fffdf9;
+}
+
+.admin-mode-card h2 {
+  font: 400 22px 'Fraunces', serif;
+  margin-bottom: 12px;
+}
+
+.admin-mode-card > p {
+  font: 400 15px/1.6 var(--sans);
+  color: var(--ink-66);
+  margin-bottom: 20px;
+}
+
+.admin-mode-card .admin-steps {
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.admin-mode-tag {
+  font: 500 10.5px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--selection);
+  border-radius: 4px;
+  padding: 3px 8px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+.admin-hint {
+  font: 400 13px/1.5 var(--sans);
+  color: var(--ink-44);
+  margin-top: 12px;
+}
+
+.admin-mode-card .admin-btn { margin-right: 10px; }
+
+.admin-mode-badge {
+  font: 500 11.5px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--selection);
+  border-radius: 4px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
 .admin-toolbar {
   display: flex;
   align-items: flex-end;
