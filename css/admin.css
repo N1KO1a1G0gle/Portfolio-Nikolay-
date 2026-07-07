@@ -1,0 +1,214 @@
+/* Admin editor — reuses the site's design tokens (see style.css) */
+
+.admin-body { animation: none; }
+
+.admin-badge {
+  font: 500 12.5px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.admin-main {
+  padding-top: 60px;
+  padding-bottom: 120px;
+  max-width: 780px;
+}
+
+.admin-panel h1 {
+  font: 300 40px 'Fraunces', serif;
+  margin-bottom: 18px;
+}
+
+.admin-sub {
+  font: 400 18px/1.6 var(--serif-body);
+  color: var(--ink-66);
+  max-width: 640px;
+  margin-bottom: 36px;
+}
+
+.admin-steps {
+  font: 400 16px/1.8 var(--sans);
+  color: var(--ink-80);
+  margin: 0 0 36px;
+  padding-left: 22px;
+}
+
+.admin-steps code {
+  background: var(--bg-beige);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.admin-label {
+  display: block;
+  font: 500 12px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-44);
+  margin-bottom: 8px;
+}
+
+.admin-input, .admin-select, .admin-textarea {
+  width: 100%;
+  font: 400 16px var(--sans);
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.admin-textarea {
+  font: 400 17px/1.6 var(--serif-body);
+  resize: vertical;
+  min-height: 60px;
+}
+
+.admin-btn {
+  font: 500 13px var(--sans);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius);
+  padding: 13px 26px;
+  cursor: pointer;
+}
+
+.admin-btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.admin-btn--primary:hover { background: var(--accent-hover); }
+
+.admin-btn--primary:disabled {
+  background: var(--ink-44);
+  cursor: not-allowed;
+}
+
+.admin-btn--ghost {
+  background: transparent;
+  color: var(--ink-70a);
+  border: 1px solid var(--hairline-strong);
+}
+
+.admin-btn--ghost:hover { color: var(--accent-hover); border-color: var(--accent); }
+
+.admin-error {
+  margin-top: 14px;
+  font: 400 15px var(--sans);
+  color: #a3372a;
+}
+
+.admin-status {
+  font: 500 14px var(--sans);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--selection);
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.admin-status.is-error { background: #f3d9d4; color: #7a2418; }
+
+.admin-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar > div { flex: 1; min-width: 220px; }
+
+.admin-loading {
+  font: italic 400 17px var(--serif-body);
+  color: var(--ink-44);
+}
+
+.admin-section-title {
+  font: 400 24px 'Fraunces', serif;
+  margin: 40px 0 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline-strong);
+}
+
+.admin-section-title:first-child { border-top: none; padding-top: 0; }
+
+/* Photo cards --------------------------------------------------------------- */
+
+.admin-photo-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.admin-photo-thumb {
+  width: 96px;
+  height: 72px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, #1F1B1610, #1F1B1610 2px, transparent 2px, transparent 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-photo-label {
+  font: 500 14px var(--sans);
+  margin-bottom: 6px;
+}
+
+.admin-photo-hint {
+  font: 400 13px var(--sans);
+  color: var(--ink-44);
+  margin-bottom: 8px;
+}
+
+.admin-photo-hint.is-pending { color: var(--accent); }
+
+/* Text fields ----------------------------------------------------------------- */
+
+.admin-text-field { margin-bottom: 22px; }
+
+.admin-text-tag {
+  display: inline-block;
+  font: 500 11px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-44);
+  background: var(--bg-beige);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-bottom: 8px;
+}
+
+.admin-save-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--hairline-strong);
+  padding: 20px 0 0;
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-dirty-count {
+  font: 400 14px var(--sans);
+  color: var(--ink-44);
+}

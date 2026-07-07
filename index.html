@@ -34,7 +34,7 @@
     <p class="hero-sub">Based in Bulgaria. I design digital products and chase light with a camera — this is where both live.</p>
   </section>
 
-  <div class="ph full-bleed hero-photo">full-bleed hero photograph</div>
+  <div class="ph full-bleed hero-photo" data-slot="hero-photo">full-bleed hero photograph</div>
 
   <!-- WHAT I DO -->
   <section class="what-i-do container">
@@ -67,7 +67,7 @@
     </div>
     <div class="container work-list">
       <article class="work-row">
-        <a href="project.html" class="ph work-cover">project 01 — cover image</a>
+        <a href="project.html" class="ph work-cover" data-slot="work1-cover">project 01 — cover image</a>
         <div>
           <p class="eyebrow" style="letter-spacing:.08em">Product design — 2026</p>
           <h3><a href="project.html">Rebuilding a banking app's onboarding</a></h3>
@@ -75,7 +75,7 @@
         </div>
       </article>
       <article class="work-row work-row--flip">
-        <a href="project-coop.html" class="ph work-cover">project 02 — cover image</a>
+        <a href="project-coop.html" class="ph work-cover" data-slot="work2-cover">project 02 — cover image</a>
         <div>
           <p class="eyebrow" style="letter-spacing:.08em">Brand &amp; identity — 2025</p>
           <h3><a href="project-coop.html">A visual language for a slow-food cooperative</a></h3>
@@ -83,7 +83,7 @@
         </div>
       </article>
       <article class="work-row">
-        <a href="project-magazine.html" class="ph work-cover">project 03 — cover image</a>
+        <a href="project-magazine.html" class="ph work-cover" data-slot="work3-cover">project 03 — cover image</a>
         <div>
           <p class="eyebrow" style="letter-spacing:.08em">Editorial design — 2024</p>
           <h3><a href="project-magazine.html">Redesigning the school magazine from the grid up</a></h3>
@@ -102,11 +102,11 @@
       </div>
       <p class="gallery-sub">Film, walks, and the occasional print — no theme required.</p>
       <div class="photo-grid">
-        <div class="ph tall" style="height:340px">photo 01</div>
-        <div class="ph" style="height:160px">photo 02</div>
-        <div class="ph" style="height:160px">photo 03</div>
-        <div class="ph" style="height:160px">photo 04</div>
-        <div class="ph" style="height:160px">photo 05</div>
+        <div class="ph tall" style="height:340px" data-slot="teaser-01">photo 01</div>
+        <div class="ph" style="height:160px" data-slot="teaser-02">photo 02</div>
+        <div class="ph" style="height:160px" data-slot="teaser-03">photo 03</div>
+        <div class="ph" style="height:160px" data-slot="teaser-04">photo 04</div>
+        <div class="ph" style="height:160px" data-slot="teaser-05">photo 05</div>
       </div>
     </div>
   </section>
@@ -147,7 +147,7 @@
   <!-- ABOUT -->
   <section id="about">
     <div class="container about-grid">
-      <div class="ph ph--on-dark about-portrait">portrait photograph</div>
+      <div class="ph ph--on-dark about-portrait" data-slot="about-portrait">portrait photograph</div>
       <div>
         <p class="eyebrow">About</p>
         <h2>Hi, I'm Nikolay.</h2>

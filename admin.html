@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Site editor — Nikolay Stoyanov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">Nikolay Stoyanov</a>
+    <span class="admin-badge">Site editor</span>
+  </div>
+</header>
+
+<main class="container admin-main">
+
+  <!-- CONNECT SCREEN -->
+  <section id="connect-screen" class="admin-panel">
+    <h1>Connect to your site</h1>
+    <p class="admin-sub">This editor saves changes straight to your GitHub repo. You'll need a personal access token scoped to <strong>only this repository</strong> — it never leaves your browser.</p>
+
+    <ol class="admin-steps">
+      <li>Go to <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
+      <li>Under <strong>Repository access</strong>, choose <strong>Only select repositories</strong> → <code>Portfolio-Nikolay-</code></li>
+      <li>Under <strong>Permissions → Repository permissions</strong>, set <strong>Contents</strong> to <strong>Read and write</strong></li>
+      <li>Generate the token and paste it below</li>
+    </ol>
+
+    <label class="admin-label" for="token-input">Personal access token</label>
+    <input id="token-input" class="admin-input" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+    <button id="connect-btn" class="admin-btn admin-btn--primary">Connect</button>
+    <p id="connect-error" class="admin-error" hidden></p>
+  </section>
+
+  <!-- EDITOR SCREEN -->
+  <section id="editor-screen" class="admin-panel" hidden>
+    <div class="admin-toolbar">
+      <div>
+        <label class="admin-label" for="page-select">Page</label>
+        <select id="page-select" class="admin-select"></select>
+      </div>
+      <button id="logout-btn" class="admin-btn admin-btn--ghost">Disconnect</button>
+    </div>
+
+    <p id="status-msg" class="admin-status" hidden></p>
+
+    <div id="page-content">
+      <p class="admin-loading">Loading…</p>
+    </div>
+
+    <div class="admin-save-bar">
+      <button id="save-btn" class="admin-btn admin-btn--primary" disabled>Save changes</button>
+      <span id="dirty-count" class="admin-dirty-count"></span>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
