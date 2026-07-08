@@ -28,6 +28,10 @@
   --radius: 6px;
   --page-max: 1180px;
   --gutter: 40px;
+
+  --ease-out: var(--ease-out);
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 * { box-sizing: border-box; }
@@ -253,8 +257,8 @@ section { scroll-margin-top: 80px; }
   opacity: 0;
   transform: translateY(26px);
   transition:
-    opacity .9s cubic-bezier(.22, 1, .36, 1),
-    transform .9s cubic-bezier(.22, 1, .36, 1);
+    opacity .9s var(--ease-out-expo),
+    transform .9s var(--ease-out-expo);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
 }
@@ -262,6 +266,26 @@ section { scroll-margin-top: 80px; }
 .reveal.in {
   opacity: 1;
   transform: none;
+}
+
+/* Cover photos enter with a cinematic blur-in instead of a lift */
+.hero-photo.reveal,
+.project-cover.reveal,
+.post-cover.reveal {
+  transform: scale(1.03);
+  filter: blur(16px);
+  transition:
+    opacity .9s var(--ease-out-expo),
+    transform .9s var(--ease-out-expo),
+    filter .9s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.hero-photo.reveal.in,
+.project-cover.reveal.in,
+.post-cover.reveal.in {
+  transform: none;
+  filter: blur(0);
 }
 
 /* Nav link underline sweep ------------------------------------------------- */
@@ -280,7 +304,7 @@ section { scroll-margin-top: 80px; }
   background: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform .35s cubic-bezier(.22, 1, .36, 1);
+  transition: transform .35s var(--ease-out);
 }
 
 .site-nav .nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
@@ -288,7 +312,7 @@ section { scroll-margin-top: 80px; }
 /* Photo hover + parallax ----------------------------------------------------- */
 
 .ph img {
-  transition: transform .8s cubic-bezier(.22, 1, .36, 1);
+  transition: transform .8s var(--ease-out);
 }
 
 a.ph:hover img,
@@ -301,21 +325,30 @@ a.ph:hover img,
 
 /* Lightbox --------------------------------------------------------------------- */
 
+/* Shown/hidden via visibility + opacity + pointer-events (never display:
+   none) so the fade can transition both ways without JS timers */
 .lightbox {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 5vmin;
   background: #1F1B16e8;
+  visibility: hidden;
   opacity: 0;
-  transition: opacity .3s ease;
+  pointer-events: none;
+  transition: opacity .3s ease, visibility 0s linear .3s;
   cursor: zoom-out;
 }
 
-.lightbox.open { opacity: 1; }
+.lightbox.open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity .3s ease;
+}
 
 .lightbox img {
   max-width: 100%;
@@ -324,7 +357,11 @@ a.ph:hover img,
   height: auto;
   border-radius: var(--radius);
   box-shadow: 0 30px 80px #00000059;
+  transform: scale(.96);
+  transition: transform .35s var(--ease-out-expo);
 }
+
+.lightbox.open img { transform: none; }
 
 /* Marquee ------------------------------------------------------------------------ */
 
@@ -422,10 +459,10 @@ a.ph:hover img,
 
 /* Hover micro-interactions ------------------------------------------------------------ */
 
-.journal-row { transition: transform .45s cubic-bezier(.22, 1, .36, 1), color .2s ease; }
+.journal-row { transition: transform .45s var(--ease-out), color .2s ease; }
 .journal-row:hover { transform: translateX(10px); }
 
-.what-item { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+.what-item { transition: transform .5s var(--ease-out); }
 .what-item:hover { transform: translateY(-6px); }
 
 /* Home: what I do ------------------------------------------------------------ */
@@ -602,6 +639,27 @@ a.ph:hover img,
 }
 
 .journal-row:hover .title { color: var(--accent-hover); }
+
+/* Film grain on the tinted bands — inline SVG noise, zero extra requests */
+
+#about,
+.gallery-band {
+  position: relative;
+  isolation: isolate;
+}
+
+#about::after,
+.gallery-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--noise);
+  pointer-events: none;
+  z-index: 1;
+}
+
+#about::after { opacity: .055; }
+.gallery-band::after { opacity: .03; }
 
 /* Home: about ------------------------------------------------------------------ */
 
@@ -897,6 +955,7 @@ a.ph:hover img,
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
   .journal-row, .what-item, .ph img, .slider-btn { transition: none; }
+  .lightbox img { transform: none; transition: none; }
 }
 
 @media (max-width: 640px) {

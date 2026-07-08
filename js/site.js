@@ -160,6 +160,25 @@
     }
   }
 
+  // Subtle 3D tilt on work covers (fine pointers only) -----------------------
+  if (!reduced && window.matchMedia('(pointer: fine)').matches) {
+    document.querySelectorAll('.work-cover').forEach(card => {
+      card.addEventListener('pointermove', e => {
+        if (card.classList.contains('reveal')) return; // let the entrance finish
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transition = 'transform .12s ease-out';
+        card.style.transform =
+          'perspective(900px) rotateY(' + (x * 4).toFixed(2) + 'deg) rotateX(' + (-y * 4).toFixed(2) + 'deg)';
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.transition = 'transform .6s var(--ease-out)';
+        card.style.transform = '';
+      });
+    });
+  }
+
   // Lightbox for real photos in grids/sliders --------------------------------
   let lightbox = null;
   function openLightbox(src, alt) {
@@ -174,15 +193,33 @@
     const img = lightbox.querySelector('img');
     img.src = src;
     img.alt = alt || '';
-    lightbox.style.display = 'flex';
-    requestAnimationFrame(() => lightbox.classList.add('open'));
+    // No display flip anymore, so the class can go on synchronously — the
+    // visibility/opacity transition runs without waiting a frame (and rAF
+    // isn't reliable in every embedder anyway).
+    setLightboxState(true);
     document.body.style.overflow = 'hidden';
   }
   function closeLightbox() {
     if (!lightbox) return;
-    lightbox.classList.remove('open');
+    setLightboxState(false);
     document.body.style.overflow = '';
-    setTimeout(() => { lightbox.style.display = 'none'; }, 300);
+  }
+  // The fade runs on CSS transitions; a fail-safe timer then pins the final
+  // state inline, so a stalled animation clock (some embedders) can never
+  // leave the lightbox half-open — same fail-open idea as the reveal watchdog.
+  let lightboxTimer = null;
+  function setLightboxState(open) {
+    clearTimeout(lightboxTimer);
+    lightbox.style.transition = '';
+    lightbox.style.visibility = '';
+    lightbox.style.opacity = '';
+    lightbox.classList.toggle('open', open);
+    lightboxTimer = setTimeout(() => {
+      if (lightbox.classList.contains('open') !== open) return;
+      lightbox.style.transition = 'none';
+      lightbox.style.visibility = open ? 'visible' : 'hidden';
+      lightbox.style.opacity = open ? '1' : '0';
+    }, 350);
   }
   document.querySelectorAll('.photo-grid .ph img, .slider-item img').forEach(img => {
     const holder = img.closest('.ph');

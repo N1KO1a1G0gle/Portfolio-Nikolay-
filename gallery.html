@@ -7,8 +7,9 @@
 <meta name="description" content="Photography by Nikolay Stoyanov — film, walks, and the occasional print.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="preload" as="image" href="images/gallery-01.jpg" fetchpriority="high">
 </head>
 <body>
 
@@ -36,7 +37,7 @@
   <!-- GRID -->
   <div class="container gallery-page-grid">
     <div class="photo-grid">
-      <div class="ph has-photo tall" style="height:400px" data-slot="gallery-01"><img src="images/gallery-01.jpg" alt="White azaleas along the path" loading="lazy"></div>
+      <div class="ph has-photo tall" style="height:400px" data-slot="gallery-01"><img src="images/gallery-01.jpg" alt="White azaleas along the path" fetchpriority="high"></div>
       <div class="ph has-photo" style="height:190px" data-slot="gallery-02"><img src="images/gallery-02.jpg" alt="Waiting on the tarmac" loading="lazy"></div>
       <div class="ph has-photo" style="height:190px" data-slot="gallery-03"><img src="images/gallery-03.jpg" alt="Sunset from the bus window" loading="lazy"></div>
       <div class="ph has-photo" style="height:190px" data-slot="gallery-04"><img src="images/gallery-04.jpg" alt="Yellow loosestrife in the shade" loading="lazy"></div>
